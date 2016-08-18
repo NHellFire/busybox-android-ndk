@@ -64,9 +64,9 @@ CONFIG_FEATURE_SYSLOG=y
 # CONFIG_FEATURE_INDIVIDUAL is not set
 # CONFIG_FEATURE_SHARED_BUSYBOX is not set
 # CONFIG_LFS is not set
-CONFIG_CROSS_COMPILER_PREFIX="arm-linux-androideabi-"
-CONFIG_SYSROOT="/opt/android-ndk/platforms/android-21/arch-arm"
-CONFIG_EXTRA_CFLAGS="-DANDROID -D__ANDROID__ -DSK_RELEASE -nostdlib -march=armv8-a -msoft-float -mfloat-abi=softfp -mfpu=neon -mthumb -mthumb-interwork -fpic -fno-short-enums -fgcse-after-reload -frename-registers -fuse-ld=bfd -fpie -pie"
+CONFIG_CROSS_COMPILER_PREFIX="aarch64-linux-android-"
+CONFIG_SYSROOT="/opt/android-ndk/platforms/android-21/arch-arm64"
+CONFIG_EXTRA_CFLAGS="-DANDROID -D__ANDROID__ -DSK_RELEASE -nostdlib -march=armv8-a -fpic -fno-short-enums -fgcse-after-reload -frename-registers -fuse-ld=bfd -fpie -pie"
 CONFIG_EXTRA_LDFLAGS="-Xlinker -z -Xlinker muldefs -nostdlib -Bdynamic -Xlinker -dynamic-linker -Xlinker /system/bin/linker64 -Xlinker -z -Xlinker nocopyreloc -Xlinker --no-undefined ${SYSROOT}/usr/lib/crtbegin_dynamic.o ${SYSROOT}/usr/lib/crtend_android.o"
 CONFIG_EXTRA_LDLIBS="dl m c gcc"
 
