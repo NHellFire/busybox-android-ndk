@@ -1,0 +1,16 @@
+diff --git a/miscutils/time.c b/miscutils/time.c
+index 19b0b44..a87540c 100644
+--- a/miscutils/time.c
++++ b/miscutils/time.c
+@@ -18,6 +18,11 @@
+ #include "libbb.h"
+ #include <sys/resource.h> /* getrusage */
+ 
++#if __ANDROID_API__ >= 21
++// Source: https://github.com/termux/termux-packages/blob/f0d4e3805a7e724757be58730bc87fa262ee9758/ndk_patches/sys-wait.h.patch
++static pid_t wait3(int* status, int options, struct rusage* rusage) { return wait4(-1, status, options, rusage); }
++#endif
++
+ /* Information on the resources used by a child process.  */
+ typedef struct {
+ 	int waitstatus;

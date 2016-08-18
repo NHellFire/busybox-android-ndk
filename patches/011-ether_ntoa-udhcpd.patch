@@ -1,0 +1,267 @@
+From: Tias Guns <tias@ulyssis.org>
+Date: Mon, 19 Mar 2012 17:58:53 +0000
+Subject: [PATCH] fix udhcpd and nameif, add ether_ntoa_r and ether_aton_r from glibc
+
+this patch also fixes part of arping and ether-wake, but not
+sufficiently yet
+
+patch from 'ether_XtoY-from-glibc' by Dan Drown
+http://dan.drown.org/android/src/busybox/
+---
+ networking/Kbuild.src       |    3 ++
+ networking/arping.c         |    7 +++-
+ networking/ether-wake.c     |    5 ++-
+ networking/ether_aton_r.c   |   63 +++++++++++++++++++++++++++++++++++++++++++
+ networking/ether_ntoa_r.c   |   33 ++++++++++++++++++++++
+ networking/ether_port.h     |   29 +++++++++++++++++++
+ networking/udhcp/Kbuild.src |    1 +
+ networking/udhcp/files.c    |    3 ++
+ 8 files changed, 140 insertions(+), 4 deletions(-)
+ create mode 100644 networking/ether_aton_r.c
+ create mode 100644 networking/ether_ntoa_r.c
+ create mode 100644 networking/ether_port.h
+
+Index: NHellFire/networking/Kbuild.src
+===================================================================
+--- NHellFire.orig/networking/Kbuild.src	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/networking/Kbuild.src	2015-10-17 15:44:55.865047060 +0100
+@@ -9,9 +9,11 @@
+ INSERT
+ lib-$(CONFIG_ARP)          += arp.o interface.o
+ lib-$(CONFIG_ARPING)       += arping.o
++lib-$(CONFIG_ARPING)       += ether_ntoa_r.o
+ lib-$(CONFIG_BRCTL)        += brctl.o
+ lib-$(CONFIG_DNSD)         += dnsd.o
+ lib-$(CONFIG_ETHER_WAKE)   += ether-wake.o
++lib-$(CONFIG_ETHER_WAKE)   += ether_aton_r.o ether_ntoa_r.o
+ lib-$(CONFIG_FAKEIDENTD)   += isrv_identd.o isrv.o
+ lib-$(CONFIG_FTPD)         += ftpd.o
+ lib-$(CONFIG_FTPGET)       += ftpgetput.o
+@@ -26,6 +28,7 @@
+ lib-$(CONFIG_IP)           += ip.o
+ lib-$(CONFIG_IPCALC)       += ipcalc.o
+ lib-$(CONFIG_NAMEIF)       += nameif.o
++lib-$(CONFIG_NAMEIF)       += ether_aton_r.o
+ lib-$(CONFIG_NC)           += nc.o
+ lib-$(CONFIG_NETSTAT)      += netstat.o
+ lib-$(CONFIG_NSLOOKUP)     += nslookup.o
+Index: NHellFire/networking/arping.c
+===================================================================
+--- NHellFire.orig/networking/arping.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/networking/arping.c	2015-10-17 15:44:55.865047060 +0100
+@@ -228,21 +228,24 @@
+ 	}
+ 	if (!(option_mask32 & QUIET)) {
+ 		int s_printed = 0;
++        char ether_buf[20];
+ 
+ 		printf("%scast re%s from %s [%s]",
+ 			FROM->sll_pkttype == PACKET_HOST ? "Uni" : "Broad",
+ 			ah->ar_op == htons(ARPOP_REPLY) ? "ply" : "quest",
+ 			inet_ntoa(src_ip),
+-			ether_ntoa((struct ether_addr *) p));
++			ether_ntoa_r((struct ether_addr *) p, ether_buf));
+ 		if (dst_ip.s_addr != src.s_addr) {
+ 			printf("for %s ", inet_ntoa(dst_ip));
+ 			s_printed = 1;
+ 		}
+ 		if (memcmp(p + ah->ar_hln + 4, me.sll_addr, ah->ar_hln)) {
++        char ether_buf[20];
++
+ 			if (!s_printed)
+ 				printf("for ");
+ 			printf("[%s]",
+-				ether_ntoa((struct ether_addr *) p + ah->ar_hln + 4));
++				ether_ntoa_r((struct ether_addr *) p + ah->ar_hln + 4, ether_buf));
+ 		}
+ 
+ 		if (last) {
+Index: NHellFire/networking/ether_aton_r.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ NHellFire/networking/ether_aton_r.c	2015-10-17 15:44:55.865047060 +0100
+@@ -0,0 +1,63 @@
++/* Copyright (C) 1996,97,98,99,2002 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, write to the Free
++   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++   02111-1307 USA.  */
++
++#include <ctype.h>
++#include <sys/types.h>
++#include <netinet/ether.h>
++#include <netinet/if_ether.h>
++
++
++struct ether_addr *
++ether_aton_r (const char *asc, struct ether_addr *addr)
++{
++  size_t cnt;
++
++  for (cnt = 0; cnt < 6; ++cnt)
++    {
++      unsigned int number;
++      char ch;
++
++      ch = tolower (*asc++);
++      if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f'))
++        return NULL;
++      number = isdigit (ch) ? (ch - '0') : (ch - 'a' + 10);
++
++      ch = tolower (*asc);
++      if ((cnt < 5 && ch != ':') || (cnt == 5 && ch != '\0' && !isspace (ch)))
++        {
++          ++asc;
++          if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f'))
++            return NULL;
++          number <<= 4;
++          number += isdigit (ch) ? (ch - '0') : (ch - 'a' + 10);
++
++          ch = *asc;
++          if (cnt < 5 && ch != ':')
++            return NULL;
++        }
++
++      /* Store result.  */
++      addr->ether_addr_octet[cnt] = (unsigned char) number;
++
++      /* Skip ':'.  */
++      ++asc;
++    }
++
++  return addr;
++}
+Index: NHellFire/networking/ether_ntoa_r.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ NHellFire/networking/ether_ntoa_r.c	2015-10-17 15:44:55.865047060 +0100
+@@ -0,0 +1,33 @@
++/* Copyright (C) 1996,97,2002 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, write to the Free
++   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++   02111-1307 USA.  */
++
++#include <stdio.h>
++#include <netinet/ether.h>
++#include <netinet/if_ether.h>
++
++
++char *
++ether_ntoa_r (const struct ether_addr *addr, char *buf)
++{
++  sprintf (buf, "%x:%x:%x:%x:%x:%x",
++           addr->ether_addr_octet[0], addr->ether_addr_octet[1],
++           addr->ether_addr_octet[2], addr->ether_addr_octet[3],
++           addr->ether_addr_octet[4], addr->ether_addr_octet[5]);
++  return buf;
++}
+Index: NHellFire/networking/ether_port.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ NHellFire/networking/ether_port.h	2015-10-17 15:44:55.865047060 +0100
+@@ -0,0 +1,29 @@
++/* Copyright (C) 1996,97,98,99,2002 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1996.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, write to the Free
++   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++   02111-1307 USA.  */
++
++#ifndef ETHER_PORT_H
++#define ETHER_PORT_H 1
++
++#include <netinet/ether.h>
++#include <netinet/if_ether.h>
++
++struct ether_addr * ether_aton_r (const char *asc, struct ether_addr *addr);
++char * ether_ntoa_r (const struct ether_addr *addr, char *buf);
++
++#endif /* ETHER_PORT_H */
+Index: NHellFire/networking/udhcp/Kbuild.src
+===================================================================
+--- NHellFire.orig/networking/udhcp/Kbuild.src	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/networking/udhcp/Kbuild.src	2015-10-17 15:44:55.865047060 +0100
+@@ -14,6 +14,7 @@
+ 
+ lib-$(CONFIG_UDHCPC)     += dhcpc.o
+ lib-$(CONFIG_UDHCPD)     += dhcpd.o arpping.o files.o leases.o static_leases.o
++lib-$(CONFIG_UDHCPD)     += ../ether_aton_r.o ../ether_ntoa_r.o
+ lib-$(CONFIG_DUMPLEASES) += dumpleases.o
+ lib-$(CONFIG_DHCPRELAY)  += dhcprelay.o
+ 
+Index: NHellFire/networking/udhcp/files.c
+===================================================================
+--- NHellFire.orig/networking/udhcp/files.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/networking/udhcp/files.c	2015-10-17 15:44:55.865047060 +0100
+@@ -6,8 +6,11 @@
+  *
+  * Licensed under GPLv2, see file LICENSE in this source tree.
+  */
++#include <sys/types.h>
+ #include <netinet/ether.h>
+ 
++#include "../ether_port.h"
++
+ #include "common.h"
+ #include "dhcpd.h"
+ 
+Index: NHellFire/networking/ether-wake.c
+===================================================================
+--- NHellFire.orig/networking/ether-wake.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/networking/ether-wake.c	2015-10-17 15:46:58.817736295 +0100
+@@ -117,13 +117,14 @@
+ static void get_dest_addr(const char *hostid, struct ether_addr *eaddr)
+ {
+ 	struct ether_addr *eap;
++	char ether_buf[20];
+ 
+ 	eap = ether_aton_r(hostid, eaddr);
+ 	if (eap) {
+-		bb_debug_msg("The target station address is %s\n\n", ether_ntoa(eap));
++		bb_debug_msg("The target station address is %s\n\n", ether_ntoa_r(eap, ether_buf));
+ #if !defined(__UCLIBC__) || UCLIBC_VERSION >= KERNEL_VERSION(0, 9, 30)
+ 	} else if (ether_hostton(hostid, eaddr) == 0) {
+-		bb_debug_msg("Station address for hostname %s is %s\n\n", hostid, ether_ntoa(eaddr));
++		bb_debug_msg("Station address for hostname %s is %s\n\n", hostid, ether_ntoa_r(eaddr, ether_buf));
+ #endif
+ 	} else {
+ 		bb_show_usage();

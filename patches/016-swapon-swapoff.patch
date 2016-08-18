@@ -1,0 +1,28 @@
+From: Tias Guns <tias@ulyssis.org>
+Date: Mon, 19 Mar 2012 23:35:34 +0000
+Subject: [PATCH] fix swapon, swapoff: comment out MNTOPT_NOAUTO
+
+patch from 'swap-on-off' by Dan Drown
+"syscalls for swapon/swapoff and defines"
+http://dan.drown.org/android/src/busybox/
+---
+ util-linux/swaponoff.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: NHellFire/util-linux/swaponoff.c
+===================================================================
+--- NHellFire.orig/util-linux/swaponoff.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/util-linux/swaponoff.c	2015-10-17 15:47:57.110063027 +0100
+@@ -186,7 +186,11 @@
+ 			/* swapon -a should ignore entries with noauto,
+ 			 * but swapoff -a should process them
+ 			 */
+-			if (do_swapoff || hasmntopt(m, MNTOPT_NOAUTO) == NULL) {
++			if (do_swapoff
++#ifdef MNTOPT_NOAUTO
++				 || hasmntopt(m, MNTOPT_NOAUTO) == NULL
++#endif
++			) {
+ 				/* each swap space might have different flags */
+ 				/* save global flags for the next round */
+ 				save_g_flags();

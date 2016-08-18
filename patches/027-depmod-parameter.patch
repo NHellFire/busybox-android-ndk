@@ -1,0 +1,28 @@
+From 9abab27407923ee7a62817538ce80e3806f58793 Mon Sep 17 00:00:00 2001
+From: Tanguy Pruvot <tanguy.pruvot@gmail.com>
+Date: Sat, 17 Mar 2012 06:01:37 +0100
+Subject: [PATCH] depmod: fix syntax with modules in parameter
+
+Change-Id: I21b8664db01cf0132db82f8d6caa1a0e77e71004
+from https://github.com/tpruvot/android_external_busybox
+---
+ modutils/depmod.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+Index: NHellFire/modutils/depmod.c
+===================================================================
+--- NHellFire.orig/modutils/depmod.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/modutils/depmod.c	2015-10-17 15:50:16.330843275 +0100
+@@ -49,7 +49,11 @@
+ 	*first = info;
+ 
+ 	info->dnext = info->dprev = info;
+-	info->name = xstrdup(fname + 2); /* skip "./" */
++	/* skip "./" */
++	if (strncmp(fname, "./", 2) == 0)
++		info->name = xstrdup(fname + 2);
++	else
++		info->name = xstrdup(fname);
+ 	info->modname = filename2modname(
+ 			bb_get_last_path_component_nostrip(fname),
+ 			NULL

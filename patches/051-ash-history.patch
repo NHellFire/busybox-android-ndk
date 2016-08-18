@@ -1,0 +1,89 @@
+From: Tias Guns <tias@ulyssis.org>
+Date: Sun, 5 Aug 2012 16:13:55 +0200
+Subject: [PATCH] ash history
+
+allows ash history to work on Android
+
+Patch modified from 'busybox-android.patch' by Alexandre Courbot
+https://github.com/Gnurou/busybox-android
+---
+ include/libbb.h |    4 ++--
+ init/init.c     |    2 +-
+ shell/ash.c     |    8 +++++++-
+ 3 files changed, 10 insertions(+), 4 deletions(-)
+
+Index: NHellFire/include/libbb.h
+===================================================================
+--- NHellFire.orig/include/libbb.h	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/include/libbb.h	2015-10-17 15:50:27.658906757 +0100
+@@ -1843,12 +1843,12 @@
+  * use bb_default_login_shell and following defines.
+  * If you change LIBBB_DEFAULT_LOGIN_SHELL,
+  * don't forget to change increment constant. */
+-#define LIBBB_DEFAULT_LOGIN_SHELL  "-/bin/sh"
++#define LIBBB_DEFAULT_LOGIN_SHELL  "-/sbin/sh"
+ extern const char bb_default_login_shell[] ALIGN1;
+ /* "/bin/sh" */
+ #define DEFAULT_SHELL              (bb_default_login_shell+1)
+ /* "sh" */
+-#define DEFAULT_SHELL_SHORT_NAME   (bb_default_login_shell+6)
++#define DEFAULT_SHELL_SHORT_NAME   (bb_default_login_shell+7)
+ 
+ /* The following devices are the same on all systems.  */
+ #define CURRENT_TTY "/dev/tty"
+Index: NHellFire/init/init.c
+===================================================================
+--- NHellFire.orig/init/init.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/init/init.c	2015-10-17 15:50:27.662906779 +0100
+@@ -1067,7 +1067,7 @@
+ 	/* Make sure environs is set to something sane */
+ 	putenv((char *) "HOME=/");
+ 	putenv((char *) bb_PATH_root_path);
+-	putenv((char *) "SHELL=/bin/sh");
++	putenv((char *) "SHELL=/sbin/sh");
+ 	putenv((char *) "USER=root"); /* needed? why? */
+ 
+ 	if (argv[1])
+Index: NHellFire/shell/ash.c
+===================================================================
+--- NHellFire.orig/shell/ash.c	2015-09-18 21:06:20.000000000 +0100
++++ NHellFire/shell/ash.c	2015-10-17 15:53:33.715949285 +0100
+@@ -13168,13 +13168,19 @@
+ 	setstackmark(&smark);
+ 	procargs(argv);
+ 
++#if !defined(__ANDROID__) && !defined(ANDROID)
+ 	if (argv[0] && argv[0][0] == '-')
++#endif
+ 		isloginsh = 1;
+ 	if (isloginsh) {
+ 		const char *hp;
+ 
+ 		state = 1;
++#if !defined(__ANDROID__) && !defined(ANDROID)
+ 		read_profile("/etc/profile");
++#else
++		read_profile("/system/etc/profile");
++#endif
+  state1:
+ 		state = 2;
+ 		hp = lookupvar("HOME");
+@@ -13215,6 +13221,10 @@
+ 		if (iflag) {
+ 			const char *hp = lookupvar("HISTFILE");
+ 			if (!hp) {
++#ifdef __ANDROID__
++				setvar("HISTFILE", "/mnt/sdcard/ash_history", 0);
++				hp = lookvar("HISTFILE");
++#else
+ 				hp = lookupvar("HOME");
+ 				if (hp) {
+ 					hp = concat_path_file(hp, ".ash_history");
+@@ -13222,6 +13232,7 @@
+ 					free((char*)hp);
+ 					hp = lookupvar("HISTFILE");
+ 				}
++#endif
+ 			}
+ 			if (hp)
+ 				line_input_state->hist_file = hp;
