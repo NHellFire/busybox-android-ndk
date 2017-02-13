@@ -1,19 +1,8 @@
-diff -x docs -ur busybox-1.24.1.orig/include/platform.h busybox-1.24.1/include/platform.h
---- busybox-1.24.1.orig/include/platform.h	2016-04-07 19:40:01.562279849 +0100
-+++ include/platform.h	2016-04-07 21:25:47.937128642 +0100
-@@ -482,7 +481,7 @@
- #if defined(ANDROID) || defined(__ANDROID__)
- # if __ANDROID_API__ < 8
- #  undef HAVE_DPRINTF
--# else
-+# elif __ANDROID_API__ < 21
- #  define dprintf fdprintf
- # endif
- # if __ANDROID_API__ < 21
-diff -x docs -ur busybox-1.24.1.orig/networking/ifconfig.c busybox-1.24.1/networking/ifconfig.c
---- busybox-1.24.1.orig/networking/ifconfig.c	2016-04-07 19:40:01.558279826 +0100
-+++ networking/ifconfig.c	2016-04-07 21:10:06.463302797 +0100
-@@ -79,13 +79,15 @@
+Index: NHellFire/networking/ifconfig.c
+===================================================================
+--- NHellFire.orig/networking/ifconfig.c
++++ NHellFire/networking/ifconfig.c
+@@ -130,13 +130,15 @@
  #endif
  
  #if ENABLE_FEATURE_IPV6
@@ -31,9 +20,10 @@ diff -x docs -ur busybox-1.24.1.orig/networking/ifconfig.c busybox-1.24.1/networ
  #endif
  
  /*
-diff -x docs -ur busybox-1.24.1.orig/networking/interface.c busybox-1.24.1/networking/interface.c
---- busybox-1.24.1.orig/networking/interface.c	2015-10-11 22:48:15.000000000 +0100
-+++ networking/interface.c	2016-04-07 21:12:48.628306709 +0100
+Index: NHellFire/networking/interface.c
+===================================================================
+--- NHellFire.orig/networking/interface.c
++++ NHellFire/networking/interface.c
 @@ -59,11 +59,13 @@
  /*
   * This is from linux/include/net/ipv6.h
@@ -48,10 +38,11 @@ diff -x docs -ur busybox-1.24.1.orig/networking/interface.c busybox-1.24.1/netwo
  # endif
  #endif /* HAVE_AFINET6 */
  
-diff -x docs -ur busybox-1.24.1.orig/networking/route.c busybox-1.24.1/networking/route.c
---- busybox-1.24.1.orig/networking/route.c	2016-04-07 19:40:01.574279924 +0100
-+++ networking/route.c	2016-04-07 21:15:51.221436973 +0100
-@@ -33,6 +33,7 @@
+Index: NHellFire/networking/route.c
+===================================================================
+--- NHellFire.orig/networking/route.c
++++ NHellFire/networking/route.c
+@@ -43,6 +43,7 @@
  //usage:     "\n	-e	Display other/more information"
  //usage:     "\n	-A inet" IF_FEATURE_IPV6("{6}") "	Select address family"
  
@@ -59,10 +50,11 @@ diff -x docs -ur busybox-1.24.1.orig/networking/route.c busybox-1.24.1/networkin
  #include <net/route.h>
  #include <net/if.h>
  #include <linux/in6.h>
-diff -x docs -ur busybox-1.24.1.orig/shell/glob.c busybox-1.24.1/shell/glob.c
---- busybox-1.24.1.orig/shell/glob.c	2016-04-07 19:40:01.554279800 +0100
-+++ shell/glob.c	2016-04-07 21:29:33.590523931 +0100
-@@ -351,7 +351,10 @@
+Index: NHellFire/shell/glob.c
+===================================================================
+--- NHellFire.orig/shell/glob.c
++++ NHellFire/shell/glob.c
+@@ -351,7 +351,10 @@ globtilde(const char *pattern, char *pat
  		 * the password file
  		 */
  #ifndef __GLIBC__

@@ -7,11 +7,11 @@ Signed-off-by: Tias Guns <tias@ulyssis.org>
  libbb/missing_syscalls.c |   16 ++++++++++++++++
  1 file changed, 16 insertions(+)
 
-diff --git a/libbb/missing_syscalls.c b/libbb/missing_syscalls.c
-index ac75829..474accb 100644
---- a/libbb/missing_syscalls.c
-+++ b/libbb/missing_syscalls.c
-@@ -55,6 +55,16 @@ int shmget(key_t key, size_t size, int shmflg)
+Index: NHellFire/libbb/missing_syscalls.c
+===================================================================
+--- NHellFire.orig/libbb/missing_syscalls.c
++++ NHellFire/libbb/missing_syscalls.c
+@@ -55,6 +55,16 @@ int shmget(key_t key, size_t size, int s
    return syscall(__NR_shmget, key, size, shmflg);
  }
  
@@ -28,17 +28,16 @@ index ac75829..474accb 100644
  int msgget(key_t key, int msgflg)
  {
    return syscall(__NR_msgget, key, msgflg);
-@@ -77,4 +87,10 @@ int shmctl(int shmid, int cmd, struct shmid_ds *buf)
- {
+@@ -78,6 +88,12 @@ int shmctl(int shmid, int cmd, struct sh
    return syscall(__NR_shmctl, shmid, cmd, buf);
  }
-+
+ 
 +struct sembuf; /* #include <linux/sem.h> */
 +int semop(int semid, struct sembuf *sops, unsigned nsops)
 +{
 +  return syscall(__NR_semop, semid, sops, nsops);
 +}
- #endif
--- 
-1.7.10.4
-
++
+ # if __ANDROID_API__ < 21
+ int tcdrain(int fd)
+ {

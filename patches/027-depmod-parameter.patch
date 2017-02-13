@@ -11,18 +11,18 @@ from https://github.com/tpruvot/android_external_busybox
 
 Index: NHellFire/modutils/depmod.c
 ===================================================================
---- NHellFire.orig/modutils/depmod.c	2015-09-18 21:06:20.000000000 +0100
-+++ NHellFire/modutils/depmod.c	2015-10-17 15:50:16.330843275 +0100
-@@ -49,7 +49,11 @@
- 	*first = info;
+--- NHellFire.orig/modutils/depmod.c
++++ NHellFire/modutils/depmod.c
+@@ -49,7 +49,11 @@ static int FAST_FUNC parse_module(const
+ 	image = xmalloc_open_zipped_read_close(fname, &len);
  
- 	info->dnext = info->dprev = info;
--	info->name = xstrdup(fname + 2); /* skip "./" */
+ 	e = moddb_get_or_create(modules, bb_get_last_path_component_nostrip(fname));
+-	e->name = xstrdup(fname + 2); /* skip "./" */
 +	/* skip "./" */
 +	if (strncmp(fname, "./", 2) == 0)
-+		info->name = xstrdup(fname + 2);
++		e->name = xstrdup(fname + 2);
 +	else
-+		info->name = xstrdup(fname);
- 	info->modname = filename2modname(
- 			bb_get_last_path_component_nostrip(fname),
- 			NULL
++		e->name = xstrdup(fname);
+ 
+ 	for (ptr = image; ptr < image + len - 10; ptr++) {
+ 		if (is_prefixed_with(ptr, "depends=")) {

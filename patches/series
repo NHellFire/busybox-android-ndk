@@ -1,7 +1,6 @@
 003-mount-umount-fsck-df.patch
 009-watchdog.patch
 010-ubiX.patch
-011-ether_ntoa-udhcpd.patch
 012-arping.patch
 015-zcip.patch
 016-swaponoff-syscalls.patch
@@ -15,7 +14,6 @@
 019-fsck.minix-mkfs.minix.patch
 020-microcom.patch
 022-ipv6.patch
-023-ether-wake.patch
 024-hush.patch
 025-readahead.patch
 026-modinfo-modprobe-without-utsrel.patch

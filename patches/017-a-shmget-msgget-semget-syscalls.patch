@@ -10,15 +10,14 @@ Signed-off-by: Tias Guns <tias@ulyssis.org>
  libbb/missing_syscalls.c |   15 +++++++++++++++
  1 file changed, 15 insertions(+)
 
-diff --git a/libbb/missing_syscalls.c b/libbb/missing_syscalls.c
-index 235f4b8..a75a332 100644
---- a/libbb/missing_syscalls.c
-+++ b/libbb/missing_syscalls.c
-@@ -49,4 +49,19 @@ int swapon(const char *path, int swapflags)
- {
+Index: NHellFire/libbb/missing_syscalls.c
+===================================================================
+--- NHellFire.orig/libbb/missing_syscalls.c
++++ NHellFire/libbb/missing_syscalls.c
+@@ -50,6 +50,21 @@ int swapon(const char *path, int swapfla
    return syscall(__NR_swapon, path, swapflags);
  }
-+
+ 
 +int shmget(key_t key, size_t size, int shmflg)
 +{
 +  return syscall(__NR_shmget, key, size, shmflg);
@@ -33,7 +32,7 @@ index 235f4b8..a75a332 100644
 +{
 +  return syscall(__NR_semget, key, nsems, semflg);
 +}
- #endif
--- 
-1.7.10.4
-
++
+ # if __ANDROID_API__ < 21
+ int tcdrain(int fd)
+ {

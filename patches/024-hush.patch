@@ -17,11 +17,10 @@ http://dan.drown.org/android/src/busybox/
  create mode 100644 shell/glob.h
  create mode 100644 shell/sigisemptyset.c
 
-diff --git a/shell/glob.c b/shell/glob.c
-new file mode 100644
-index 0000000..556d720
+Index: NHellFire/shell/glob.c
+===================================================================
 --- /dev/null
-+++ b/shell/glob.c
++++ NHellFire/shell/glob.c
 @@ -0,0 +1,786 @@
 +/*
 + * Modified for the Android NDK by Gabor Cselle, http://www.gaborcselle.com/
@@ -809,11 +808,10 @@ index 0000000..556d720
 +		return((*pglob->gl_lstat)(fn, sb));
 +	return(lstat(fn, sb));
 +}
-diff --git a/shell/glob.h b/shell/glob.h
-new file mode 100644
-index 0000000..e8e6578
+Index: NHellFire/shell/glob.h
+===================================================================
 --- /dev/null
-+++ b/shell/glob.h
++++ NHellFire/shell/glob.h
 @@ -0,0 +1,113 @@
 +/*
 + * Modified for the Android NDK by Gabor Cselle, http://www.gaborcselle.com/
@@ -928,11 +926,19 @@ index 0000000..e8e6578
 +__END_DECLS
 +
 +#endif /* !_GLOB_H_ */
-diff --git a/shell/hush.c b/shell/hush.c
-index e2dc1e2..7f8e0be 100644
---- a/shell/hush.c
-+++ b/shell/hush.c
-@@ -86,7 +86,7 @@
+Index: NHellFire/shell/hush.c
+===================================================================
+--- NHellFire.orig/shell/hush.c
++++ NHellFire/shell/hush.c
+@@ -223,6 +223,7 @@
+ //applet:IF_BASH_IS_HUSH(APPLET_ODDNAME(bash, hush, BB_DIR_BIN, BB_SUID_DROP, hush))
+ 
+ //kbuild:lib-$(CONFIG_HUSH) += hush.o match.o shell_common.o
++//kbuild:lib-$(CONFIG_HUSH) += glob.o sigisemptyset.o
+ //kbuild:lib-$(CONFIG_SH_IS_HUSH) += hush.o match.o shell_common.o
+ //kbuild:lib-$(CONFIG_BASH_IS_HUSH) += hush.o match.o shell_common.o
+ //kbuild:lib-$(CONFIG_HUSH_RANDOM_SUPPORT) += random.o
+@@ -242,7 +243,7 @@
      )
  # include <malloc.h>   /* for malloc_trim */
  #endif
@@ -941,19 +947,10 @@ index e2dc1e2..7f8e0be 100644
  /* #include <dmalloc.h> */
  #if ENABLE_HUSH_CASE
  # include <fnmatch.h>
-@@ -248,6 +248,7 @@
- //applet:IF_FEATURE_BASH_IS_HUSH(APPLET_ODDNAME(bash, hush, BB_DIR_BIN, BB_SUID_DROP, bash))
- 
- //kbuild:lib-$(CONFIG_HUSH) += hush.o match.o shell_common.o
-+//kbuild:lib-$(CONFIG_HUSH) += glob.o sigisemptyset.o
- //kbuild:lib-$(CONFIG_HUSH_RANDOM_SUPPORT) += random.o
- 
- /* -i (interactive) and -s (read stdin) are also accepted,
-diff --git a/shell/sigisemptyset.c b/shell/sigisemptyset.c
-new file mode 100644
-index 0000000..8297313
+Index: NHellFire/shell/sigisemptyset.c
+===================================================================
 --- /dev/null
-+++ b/shell/sigisemptyset.c
++++ NHellFire/shell/sigisemptyset.c
 @@ -0,0 +1,8 @@
 +// in androids asm/signal.h, sigset_t is a simple unsigned long
 +
@@ -963,6 +960,3 @@ index 0000000..8297313
 +{
 +  return set;
 +}
--- 
-1.7.10.4
-

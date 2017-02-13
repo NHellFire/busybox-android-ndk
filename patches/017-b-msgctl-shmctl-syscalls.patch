@@ -7,15 +7,14 @@ Signed-off-by: Tias Guns <tias@ulyssis.org>
  libbb/missing_syscalls.c |   13 +++++++++++++
  1 file changed, 13 insertions(+)
 
-diff --git a/libbb/missing_syscalls.c b/libbb/missing_syscalls.c
-index a75a332..ac75829 100644
---- a/libbb/missing_syscalls.c
-+++ b/libbb/missing_syscalls.c
-@@ -64,4 +64,17 @@ int semget(key_t key, int nsems, int semflg)
- {
+Index: NHellFire/libbb/missing_syscalls.c
+===================================================================
+--- NHellFire.orig/libbb/missing_syscalls.c
++++ NHellFire/libbb/missing_syscalls.c
+@@ -65,6 +65,19 @@ int semget(key_t key, int nsems, int sem
    return syscall(__NR_semget, key, nsems, semflg);
  }
-+
+ 
 +struct msqid_ds; /* #include <linux/msg.h> */
 +int msgctl(int msqid, int cmd, struct msqid_ds *buf)
 +{
@@ -28,7 +27,7 @@ index a75a332..ac75829 100644
 +{
 +  return syscall(__NR_shmctl, shmid, cmd, buf);
 +}
- #endif
--- 
-1.7.10.4
-
++
+ # if __ANDROID_API__ < 21
+ int tcdrain(int fd)
+ {
