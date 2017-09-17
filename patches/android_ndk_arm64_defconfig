@@ -64,7 +64,7 @@ CONFIG_FEATURE_SYSLOG=y
 # CONFIG_BUILD_LIBBUSYBOX is not set
 # CONFIG_FEATURE_INDIVIDUAL is not set
 # CONFIG_FEATURE_SHARED_BUSYBOX is not set
-# CONFIG_LFS is not set
+CONFIG_LFS=y
 CONFIG_CROSS_COMPILER_PREFIX="aarch64-linux-android-"
 CONFIG_SYSROOT="/opt/android-ndk/platforms/android-21/arch-arm64"
 CONFIG_EXTRA_CFLAGS="-DANDROID -D__ANDROID__ -DSK_RELEASE -nostdlib -march=armv8-a -fpic -fno-short-enums -fgcse-after-reload -frename-registers -fuse-ld=bfd -fpie -pie"
