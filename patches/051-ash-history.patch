@@ -12,11 +12,11 @@ https://github.com/Gnurou/busybox-android
  shell/ash.c     |    8 +++++++-
  3 files changed, 10 insertions(+), 4 deletions(-)
 
-Index: NHellFire/include/libbb.h
+Index: src/include/libbb.h
 ===================================================================
---- NHellFire.orig/include/libbb.h	2015-09-18 21:06:20.000000000 +0100
-+++ NHellFire/include/libbb.h	2015-10-17 15:50:27.658906757 +0100
-@@ -1843,12 +1843,12 @@
+--- src.orig/include/libbb.h
++++ src/include/libbb.h
+@@ -2038,12 +2038,12 @@ extern struct globals *const ptr_to_glob
   * use bb_default_login_shell and following defines.
   * If you change LIBBB_DEFAULT_LOGIN_SHELL,
   * don't forget to change increment constant. */
@@ -31,11 +31,11 @@ Index: NHellFire/include/libbb.h
  
  /* The following devices are the same on all systems.  */
  #define CURRENT_TTY "/dev/tty"
-Index: NHellFire/init/init.c
+Index: src/init/init.c
 ===================================================================
---- NHellFire.orig/init/init.c	2015-09-18 21:06:20.000000000 +0100
-+++ NHellFire/init/init.c	2015-10-17 15:50:27.662906779 +0100
-@@ -1067,7 +1067,7 @@
+--- src.orig/init/init.c
++++ src/init/init.c
+@@ -1101,7 +1101,7 @@ int init_main(int argc UNUSED_PARAM, cha
  	/* Make sure environs is set to something sane */
  	putenv((char *) "HOME=/");
  	putenv((char *) bb_PATH_root_path);
@@ -44,19 +44,11 @@ Index: NHellFire/init/init.c
  	putenv((char *) "USER=root"); /* needed? why? */
  
  	if (argv[1])
-Index: NHellFire/shell/ash.c
+Index: src/shell/ash.c
 ===================================================================
---- NHellFire.orig/shell/ash.c	2015-09-18 21:06:20.000000000 +0100
-+++ NHellFire/shell/ash.c	2015-10-17 15:53:33.715949285 +0100
-@@ -13168,13 +13168,19 @@
- 	setstackmark(&smark);
- 	procargs(argv);
- 
-+#if !defined(__ANDROID__) && !defined(ANDROID)
- 	if (argv[0] && argv[0][0] == '-')
-+#endif
- 		isloginsh = 1;
- 	if (isloginsh) {
+--- src.orig/shell/ash.c
++++ src/shell/ash.c
+@@ -13921,7 +13921,11 @@ int ash_main(int argc UNUSED_PARAM, char
  		const char *hp;
  
  		state = 1;
@@ -68,7 +60,7 @@ Index: NHellFire/shell/ash.c
   state1:
  		state = 2;
  		hp = lookupvar("HOME");
-@@ -13215,6 +13221,10 @@
+@@ -13959,6 +13963,10 @@ int ash_main(int argc UNUSED_PARAM, char
  		if (iflag) {
  			const char *hp = lookupvar("HISTFILE");
  			if (!hp) {
@@ -78,9 +70,9 @@ Index: NHellFire/shell/ash.c
 +#else
  				hp = lookupvar("HOME");
  				if (hp) {
- 					hp = concat_path_file(hp, ".ash_history");
-@@ -13222,6 +13232,7 @@
- 					free((char*)hp);
+ 					INT_OFF;
+@@ -13968,6 +13976,7 @@ int ash_main(int argc UNUSED_PARAM, char
+ 					INT_ON;
  					hp = lookupvar("HISTFILE");
  				}
 +#endif
