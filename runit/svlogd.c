@@ -13,7 +13,7 @@ modification, are permitted provided that the following conditions are met:
    3. The name of the author may not be used to endorse or promote products
       derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
 EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -123,14 +123,13 @@ log message, you can use a pattern like this instead
 
 -*: *: pid *
 */
-
 //config:config SVLOGD
-//config:	bool "svlogd"
+//config:	bool "svlogd (15 kb)"
 //config:	default y
 //config:	help
-//config:	  svlogd continuously reads log data from its standard input, optionally
-//config:	  filters log messages, and writes the data to one or more automatically
-//config:	  rotated logs.
+//config:	svlogd continuously reads log data from its standard input, optionally
+//config:	filters log messages, and writes the data to one or more automatically
+//config:	rotated logs.
 
 //applet:IF_SVLOGD(APPLET(svlogd, BB_DIR_USR_SBIN, BB_SUID_DROP))
 
@@ -141,15 +140,22 @@ log message, you can use a pattern like this instead
 //usage:#define svlogd_full_usage "\n\n"
 //usage:       "Read log data from stdin and write to rotated log files in DIRs"
 //usage:   "\n"
+//usage:   "\n""-r C		Replace non-printable characters with C"
+//usage:   "\n""-R CHARS	Also replace CHARS with C (default _)"
+//usage:   "\n""-t		Timestamp with @tai64n"
+//usage:   "\n""-tt		Timestamp with yyyy-mm-dd_hh:mm:ss.sssss"
+//usage:   "\n""-ttt		Timestamp with yyyy-mm-ddThh:mm:ss.sssss"
+//usage:   "\n""-v		Verbose"
+//usage:   "\n"
 //usage:   "\n""DIR/config file modifies behavior:"
-//usage:   "\n""sSIZE - when to rotate logs"
+//usage:   "\n""sSIZE - when to rotate logs (default 1000000, 0 disables)"
 //usage:   "\n""nNUM - number of files to retain"
-/*usage:   "\n""NNUM - min number files to retain" - confusing */
-/*usage:   "\n""tSEC - rotate file if it get SEC seconds old" - confusing */
+///////:   "\n""NNUM - min number files to retain" - confusing
+///////:   "\n""tSEC - rotate file if it get SEC seconds old" - confusing
 //usage:   "\n""!PROG - process rotated log with PROG"
-/*usage:   "\n""uIPADDR - send log over UDP" - unsupported */
-/*usage:   "\n""UIPADDR - send log over UDP and DONT log" - unsupported */
-/*usage:   "\n""pPFX - prefix each line with PFX" - unsupported */
+///////:   "\n""uIPADDR - send log over UDP" - unsupported
+///////:   "\n""UIPADDR - send log over UDP and DONT log" - unsupported
+///////:   "\n""pPFX - prefix each line with PFX" - unsupported
 //usage:   "\n""+,-PATTERN - (de)select line for logging"
 //usage:   "\n""E,ePATTERN - (de)select line for stderr"
 
@@ -1037,9 +1043,10 @@ int svlogd_main(int argc, char **argv)
 
 	INIT_G();
 
-	opt_complementary = "tt:vv";
-	opt = getopt32(argv, "r:R:l:b:tv",
-			&r, &replace, &l, &b, &timestamp, &verbose);
+	opt = getopt32(argv, "^"
+			"r:R:l:b:tv" "\0" "tt:vv",
+			&r, &replace, &l, &b, &timestamp, &verbose
+	);
 	if (opt & 1) { // -r
 		repl = r[0];
 		if (!repl || r[1])

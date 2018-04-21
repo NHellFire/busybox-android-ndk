@@ -4,11 +4,11 @@
  * Licensed under GPLv2, see file LICENSE in this source tree.
  */
 //config:config SSL_CLIENT
-//config:	bool "ssl_client"
+//config:	bool "ssl_client (23 kb)"
 //config:	default y
 //config:	select TLS
 //config:	help
-//config:	  This tool pipes data to/from a socket, TLS-encrypting it.
+//config:	This tool pipes data to/from a socket, TLS-encrypting it.
 
 //applet:IF_SSL_CLIENT(APPLET(ssl_client, BB_DIR_USR_BIN, BB_SUID_DROP))
 
@@ -30,7 +30,7 @@ int ssl_client_main(int argc UNUSED_PARAM, char **argv)
 	// INIT_G();
 
 	tls = new_tls_state();
-	opt = getopt32(argv, "s:#r:#n:", &tls->ofd, &tls->ifd, &sni);
+	opt = getopt32(argv, "s:+r:+n:", &tls->ofd, &tls->ifd, &sni);
 	if (!(opt & 2)) {
 		/* -r N defaults to -s N */
 		tls->ifd = tls->ofd;

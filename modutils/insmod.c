@@ -7,13 +7,13 @@
  * Licensed under GPLv2 or later, see file LICENSE in this source tree.
  */
 //config:config INSMOD
-//config:	bool "insmod"
+//config:	bool "insmod (22 kb)"
 //config:	default y
 //config:	select PLATFORM_LINUX
 //config:	help
-//config:	  insmod is used to load specified modules in the running kernel.
+//config:	insmod is used to load specified modules in the running kernel.
 
-//applet:IF_INSMOD(IF_NOT_MODPROBE_SMALL(APPLET(insmod, BB_DIR_SBIN, BB_SUID_DROP)))
+//applet:IF_INSMOD(IF_NOT_MODPROBE_SMALL(APPLET_NOEXEC(insmod, insmod, BB_DIR_SBIN, BB_SUID_DROP, insmod)))
 
 //kbuild:ifneq ($(CONFIG_MODPROBE_SMALL),y)
 //kbuild:lib-$(CONFIG_INSMOD) += insmod.o modutils.o
